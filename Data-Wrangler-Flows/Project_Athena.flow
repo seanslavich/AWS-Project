@@ -1,0 +1,231 @@
+{
+  "metadata": {
+    "version": 1,
+    "disable_limits": false,
+    "instance_type": "ml.m5.4xlarge"
+  },
+  "nodes": [
+    {
+      "node_id": "d31dd3b6-7751-4823-9c52-423830b14751",
+      "type": "SOURCE",
+      "operator": "sagemaker.athena_source_0.1",
+      "parameters": {
+        "dataset_definition": {
+          "datasetSourceType": "Athena",
+          "name": "master-dataset",
+          "catalogName": "AwsDataCatalog",
+          "databaseName": "masterdata",
+          "queryString": "SELECT * FROM master_table",
+          "s3OutputLocation": "s3://sagemaker-us-east-1-741154895315/athena/athena/",
+          "outputFormat": "parquet",
+          "workgroup": null,
+          "workgroupOutputLocation": null,
+          "enforceWorkgroupConfiguration": false
+        }
+      },
+      "trained_parameters": {
+        "query_execution_id": "4ee21b56-024e-4f11-8939-fffd0c76d1d3",
+        "unload_table_name": "efb524141a7d4eaf8da65ca866c5f6e9",
+        "unload_s3_output_location": "s3://sagemaker-us-east-1-741154895315/athena/athena/efb524141a7d4eaf8da65ca866c5f6e9/data/"
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "default",
+          "sampling": {
+            "sampling_method": "sample_by_limit",
+            "limit_rows": 50000
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "833b2b1a-ee89-4586-a029-19de2c6a5cd0",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.infer_and_cast_type_0.1",
+      "parameters": {},
+      "trained_parameters": {
+        "schema": {
+          "hircand_interview_id": "long",
+          "hircand_candidate_name": "string",
+          "hircand_candidate_icms_id": "long",
+          "hircand_role": "string",
+          "hircand_type": "string",
+          "hircand_level": "string",
+          "hircand_preferred_time": "datetime",
+          "hircand_preferred_day": "string",
+          "hircand_last_updated": "datetime",
+          "hiremp_interview_id": "long",
+          "hiremp_employee_alias": "string",
+          "hiremp_interviewer_name": "string",
+          "hiremp_candidate_name": "string",
+          "hiremp_candidate_icms_id": "long",
+          "hiremp_role": "string",
+          "hiremp_type": "string",
+          "hiremp_level": "string",
+          "hiremp_preferred_time": "datetime",
+          "hiremp_preferred_day": "string",
+          "hiremp_last_updated": "datetime",
+          "voop_interview_id": "long",
+          "voop_employee_alias": "string",
+          "voop_date": "datetime",
+          "voop_time": "datetime",
+          "voop_candidate_name": "string",
+          "voop_decision": "string",
+          "voop_duration": "long",
+          "voop_level": "string",
+          "voop_interview_type": "string",
+          "voop_communication_rating": "long",
+          "voop_leadership_rating": "long",
+          "voop_technical_rating": "long",
+          "voop_interest_rating": "long",
+          "voop_last_update": "datetime",
+          "sched_employee_alias": "string",
+          "sched_timestamp": "datetime",
+          "sched_week_number": "long",
+          "sched_slot_hour": "datetime",
+          "sched_modified": "string",
+          "sched_last_updated": "datetime",
+          "emp_alias": "string",
+          "emp_name": "string",
+          "emp_skill": "string",
+          "emp_skill_rating": "long",
+          "emp_last_updated": "datetime",
+          "date_col": "string"
+        }
+      },
+      "inputs": [
+        {
+          "name": "default",
+          "node_id": "d31dd3b6-7751-4823-9c52-423830b14751",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "aff02392-d1c2-4bf6-9be7-4da6f513ec0c",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_columns_0.1",
+      "parameters": {
+        "operator": "Drop column",
+        "drop_column_parameters": {
+          "column_to_drop": [
+            "sched_modified",
+            "sched_last_updated",
+            "sched_slot_hour",
+            "sched_week_number",
+            "sched_employee_alias",
+            "sched_timestamp",
+            "voop_technical_rating",
+            "voop_interest_rating",
+            "voop_last_update",
+            "voop_leadership_rating",
+            "voop_communication_rating",
+            "voop_interview_type",
+            "voop_level",
+            "voop_duration",
+            "voop_candidate_name",
+            "voop_time",
+            "voop_decision",
+            "voop_employee_alias",
+            "voop_interview_id",
+            "voop_date",
+            "hircand_last_updated",
+            "hiremp_last_updated",
+            "emp_last_updated",
+            "date_col"
+          ]
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "833b2b1a-ee89-4586-a029-19de2c6a5cd0",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "645ce85b-91ea-49db-ba40-53cdf81bb1f4",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.split_0.1",
+      "parameters": {
+        "operator": "Randomized split",
+        "randomized_split_parameters": {
+          "splits": [
+            {
+              "name": "Train",
+              "percentage": 0.8
+            },
+            {
+              "name": "Test",
+              "percentage": 0.2
+            }
+          ],
+          "error": 0.0001
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "aff02392-d1c2-4bf6-9be7-4da6f513ec0c",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Train"
+        },
+        {
+          "name": "Test"
+        }
+      ]
+    },
+    {
+      "node_id": "06bd90ed-2aea-45cc-8f7a-a4336f3b678f",
+      "type": "DATASET",
+      "operator": "sagemaker.dataset.identity_0.1",
+      "parameters": {},
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "645ce85b-91ea-49db-ba40-53cdf81bb1f4",
+          "output_name": "Train"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "bacdf654-d25d-476b-94af-2f7cbc53c634",
+      "type": "DATASET",
+      "operator": "sagemaker.dataset.identity_0.1",
+      "parameters": {},
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "645ce85b-91ea-49db-ba40-53cdf81bb1f4",
+          "output_name": "Test"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    }
+  ]
+}
